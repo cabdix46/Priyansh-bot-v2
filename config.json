@@ -5,24 +5,24 @@
     "autoCreateDB": true,
     "notiGroup": true,
     "NOTIFICATION": true,
-    "allowInbox": false,
+    "allowInbox": true,
     "autoClean": true,
     "commandDisabled": [
         "sim.js"
     ],
     "eventDisabled": [
-        "join.js"
+        ""
     ],
     "EMAIL": "",
     "PASSWORD": "",
     "OTPKEY": "",
-    "BOTNAME": "Your-Father",
-    "PREFIX": "/",
+    "BOTNAME": "TesT",
+    "PREFIX": ".",
     "ADMINBOT": [
-        "100037743553265"
+        "100012191281263"
     ],
     "NDH": [
-        "100037743553265"
+        "100012191281263"
     ],
     "DATABASE": {
         "sqlite": {
