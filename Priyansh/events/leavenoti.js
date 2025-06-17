@@ -1,58 +1,66 @@
 module.exports.config = {
-	name: "leave",
-	eventType: ["log:unsubscribe"],
-	version: "1.0.0",
-	credits: "𝙋𝙧𝙞𝙮𝙖𝙣𝙨𝙝 𝙍𝙖𝙟𝙥𝙪𝙩",
-	description: "Notify the Bot or the person leaving the group with a random gif/photo/video",
-	dependencies: {
-		"fs-extra": "",
-		"path": ""
-	}
+  name: "leaveNoti",
+  eventType: ["log:unsubscribe"],
+  version: "1.0.0",
+  credits: "Modified by Amir",
+  description: "Notify when member leaves or is kicked",
+  dependencies: {
+    "fs-extra": "",
+    "path": ""
+  }
 };
 
-module.exports.onLoad = function () {
-    const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
-    const { join } = global.nodemodule["path"];
+module.exports.run = async function ({ api, event, Users, Threads }) {
+  const fs = require("fs");
+  const axios = require("axios");
 
-	const path = join(__dirname, "cache", "leaveGif", "randomgif");
-	if (existsSync(path)) mkdirSync(path, { recursive: true });	
+  if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
 
-	const path2 = join(__dirname, "cache", "leaveGif", "randomgif");
-    if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
+  function reply(data) {
+    api.sendMessage(data, event.threadID, event.messageID);
+  }
 
-    return;
-}
+  const { threadName, participantIDs } = await api.getThreadInfo(event.threadID);
+  const userID = event.logMessageData.leftParticipantFbId;
+  const userInfo = await api.getUserInfo(userID);
+  const userName = userInfo[userID].name;
+  const totalMembers = participantIDs.length;
+  const isKicked = event.author !== userID;
 
-module.exports.run = async function({ api, event, Users, Threads }) {
-	if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
-	const { createReadStream, existsSync, mkdirSync, readdirSync } = global.nodemodule["fs-extra"];
-	const { join } =  global.nodemodule["path"];
-	const { threadID } = event;
-  const moment = require("moment-timezone");
-  const time = moment.tz("Asia/Kolkata").format("DD/MM/YYYY || HH:mm:s");
-  const hours = moment.tz("Asia/Kolkata").format("HH");
-	const data = global.data.threadData.get(parseInt(threadID)) || (await Threads.getData(threadID)).data;
-	const name = global.data.userName.get(event.logMessageData.leftParticipantFbId) || await Users.getNameUser(event.logMessageData.leftParticipantFbId);
-	const type = (event.author == event.logMessageData.leftParticipantFbId) ? "leave" : "managed";
-	const path = join(__dirname, "events", "123.mp4");
-	const pathGif = join(path, `${threadID}123.mp4`);
-	var msg, formPush
+  const pathh = __dirname + `/cache/bye.png`;
 
-	if (existsSync(path)) mkdirSync(path, { recursive: true });
+  // Random background selection
+  const backgrounds = [
+    "https://i.imgur.com/oFLLEW3.jpeg",
+    "https://i.imgur.com/qAgUPo7.jpeg",
+    "https://i.imgur.com/PPYFSyW.jpeg",
+    "https://i.imgur.com/NLaFNEM.jpeg",
+    "https://i.imgur.com/W1O6KIQ.jpeg"
+  ];
+  const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
-(typeof data.customLeave == "undefined") ? msg = "[⚜️] 👉🏻👉🏻 {name} 👈🏻👈🏻▬▬▬▬ KO Bhaga diya  .... {type}  [⚜️]\n😒😒\n🌺🌸🌺 🙏🏻 👉🏻👉🏻👉🏻 {name} 👈🏻👈🏻 ●▬▬▬▬๑۩۩BEHTI HAWA SA THAA WO 😥 uDTI PATANG✨✨ SAA THAA WOO ♥ KAHA GAYA USE DHOONDHO🤔🤔🤔●▬▬▬▬๑۩ 🙏🏻💐<3😊💔\n\n[❤️‍🔥] 🖤🖤😥😥...Good {session} || {time}" : msg = data.customLeave;
-	msg = msg.replace(/\{name}/g, name).replace(/\{type}/g, type).replace(/\{session}/g, hours <= 10 ? "𝙈𝙤𝙧𝙣𝙞𝙣𝙜" : 
-    hours > 10 && hours <= 12 ? "𝘼𝙛𝙩𝙚𝙧𝙉𝙤𝙤𝙣" :
-    hours > 12 && hours <= 18 ? "𝙀𝙫𝙚𝙣𝙞𝙣𝙜" : "𝙉𝙞𝙜𝙝𝙩").replace(/\{time}/g, time);  
+  // Profile picture URL
+  const avatarURL = `https://graph.facebook.com/${userID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
-	const randomPath = readdirSync(join(__dirname, "cache", "leaveGif", "randomgif"));
+  // New Goodbye API
+  const apiURL = `https://kaiz-apis.gleeze.com/api/goodbye?pp=${encodeURIComponent(avatarURL)}&nama=${encodeURIComponent(userName)}&bg=${encodeURIComponent(randomBg)}&member=${totalMembers}&apikey=3873fc7b-0e7e-4b6b-94b7-5be99869552e`;
 
-	if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathGif) }
-	else if (randomPath.length != 0) {
-		const pathRandom = join(__dirname, "cache", "leaveGif", "randomgif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
-		formPush = { body: msg, attachment: createReadStream(pathRandom) }
-	}
-	else formPush = { body: msg }
-	
-	return api.sendMessage(formPush, threadID);
-                            }
+  try {
+    const response = await axios.get(apiURL, { responseType: "arraybuffer" });
+    fs.writeFileSync(pathh, Buffer.from(response.data, "utf-8"));
+
+    const type = isKicked
+      ? "𝐊𝐚 𝐌𝐨𝐘𝐞 𝐌𝐨𝐘𝐞 𝐇𝐎𝐨 𝐆𝐘𝐚 ┑(￣▽￣)┍"
+      : "𝐅𝐚𝐑𝐚𝐑 ┑ಢ‸ಢ ";
+
+    const message = {
+      body: `     \n   ‿︵‿︵ʚ˚̣̣̣͙ɞ・❉・ ʚ˚̣̣̣͙ɞ‿︵‿︵\n─━──❝ 𝐍𝐘𝐜 𝐌𝐨𝐕𝐞 ❞──━─\n ●▬▬▬▬▬▬▬▬▬▬▬▬●\n\n ➥ ${userName} ${type}\n➥ Remaining Members: ${totalMembers} \n\n●▬▬▬▬▬▬▬▬▬▬▬▬●\n  ●●●━━━━━◥🖤◤━━━━━●●●`,
+      attachment: fs.createReadStream(pathh)
+    };
+
+    reply(message);
+  } catch (error) {
+    console.error("❌ Error in leaveNoti:", error);
+    reply(`❌ Error while generating goodbye image for ${userName}.`);
+  }
+};
