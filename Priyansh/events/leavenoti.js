@@ -50,11 +50,11 @@ module.exports.run = async function ({ api, event, Users, Threads }) {
     fs.writeFileSync(pathh, Buffer.from(response.data, "utf-8"));
 
     const type = isKicked
-      ? "𝐊𝐚 𝐌𝐨𝐘𝐞 𝐌𝐨𝐘𝐞 𝐇𝐎𝐨 𝐆𝐘𝐚 ┑(￣▽￣)┍"
-      : "𝐅𝐚𝐑𝐚𝐑 ┑ಢ‸ಢ ";
+      ? "✰ 𝐊𝐚 𝐌𝐨𝐘𝐞 𝐌𝐨𝐘𝐞 𝐇𝐎𝐨 𝐆𝐘𝐚\n               ┑(￣▽￣)┍"
+      : "✰ 𝐅𝐚𝐑𝐚𝐑 ┑ಢ‸ಢ ";
 
     const message = {
-      body: `     \n   ‿︵‿︵ʚ˚̣̣̣͙ɞ・❉・ ʚ˚̣̣̣͙ɞ‿︵‿︵\n─━──❝ 𝐍𝐘𝐜 𝐌𝐨𝐕𝐞 ❞──━─\n ●▬▬▬▬▬▬▬▬▬▬▬▬●\n\n ➥ ${userName} ${type}\n➥ Remaining Members: ${totalMembers} \n\n●▬▬▬▬▬▬▬▬▬▬▬▬●\n  ●●●━━━━━◥🖤◤━━━━━●●●`,
+      body: `     \n   ‿︵‿︵ʚ˚̣̣̣͙ɞ・❉・ ʚ˚̣̣̣͙ɞ‿︵‿︵\n─━──❝ 𝐍𝐘𝐜 𝐌𝐨𝐕𝐞 ❞──━─\n ●▬▬▬▬▬▬▬▬▬▬▬▬●\n\n              ➥ ${userName} ${type}\n➥ 𝐑𝐄𝐌𝐀𝐈𝐍𝐈𝐆 𝐌𝐄𝐌𝐁𝐄𝐑𝐒R: ${totalMembers} \n\n●▬▬▬▬▬▬▬▬▬▬▬▬●`,
       attachment: fs.createReadStream(pathh)
     };
 
@@ -64,3 +64,4 @@ module.exports.run = async function ({ api, event, Users, Threads }) {
     reply(`❌ Error while generating goodbye image for ${userName}.`);
   }
 };
+    
